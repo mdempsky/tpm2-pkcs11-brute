@@ -75,15 +75,14 @@ func (s *store) brute(label, role string, digits int) {
 	for i := 0; i < workers; i++ {
 		i := i
 		go func() {
-			pin := make([]byte, 1+digits)
-			for j := range pin {
-				pin[j] = '0'
-			}
+			pin0 := make([]byte, 1+digits)
+			pin := pin0[1:]
+			pin0 = pin0[:0]
 
 			for ; i < max && atomic.LoadUint32(&done) == 0; i += workers {
-				strconv.AppendInt(pin[:0], int64(max+i), 10)
-				if guess(pin[1:], salt, s.iters, nonce, ciphertext) {
-					result <- pin[1:]
+				strconv.AppendInt(pin0, int64(max+i), 10)
+				if guess(pin, salt, s.iters, nonce, ciphertext) {
+					result <- pin
 					return
 				}
 			}
